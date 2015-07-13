@@ -1,0 +1,25 @@
+---
+title: "Reproducible research assign 1"
+output: html_document
+---
+
+
+```{r}
+library(data.table)
+dt <- fread("activity.csv")
+
+date.sum <- dt[,.(steps.sum = sum(steps)),by=.(date)]
+
+hist(date.sum$steps.sum)
+
+mean.steps.sum <- mean(date.sum$steps.sum,na.rm=T)
+median.steps.sum <- median(date.sum$steps.sum, na.rm=T)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+# plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
