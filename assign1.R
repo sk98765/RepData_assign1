@@ -64,25 +64,10 @@ orgdt$date <- as.Date(orgdt$date)
 
 orgdt$wday <- weekdays(orgdt$date)
 
-m <- orgdt[wday == "Monday"]
-t <- orgdt[wday == "Tuesday"]
-w <- orgdt[wday == "Wednesday"]
-th <- orgdt[wday == "Thursday"]
-f <- orgdt[wday == "Friday"]
-sa <- orgdt[wday == "Saturday"]
-su <- orgdt[wday == "Sunday"]
+dt$wday[dt$wday %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")] <- "weekday"
+dt$wday[dt$wday %in% c("Saturday","Sunday")] <- "weekend"
+orgdt$wday <- as.factor(orgdt$wday)
 
-m$wk <- "weekday"
-t$wk <- "weekday"
-w$wk <- "weekday"
-th$wk <- "weekday"
-f$wk <- "weekday"
-sa$wk <- "weekend"
-su$wk <- "weekend"
-
-ndt <- rbind(m,t,w,th,f,sa,su)
-ndt$wday <- NULL
-ndt$wk <- as.factor(ndt$wk)
 
 
 

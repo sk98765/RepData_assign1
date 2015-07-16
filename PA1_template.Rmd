@@ -87,5 +87,9 @@ Mean of the total number of steps take per day without missing values is **`r (n
 
 Median of the total number of steps take per day without missing values is **`r (new.median.steps.total.per.day)`**.
 
+```{r}
+# Final step 
+
+```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
