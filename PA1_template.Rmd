@@ -6,6 +6,7 @@ output: html_document
 Load the activity.csv to R and process the data. 
 
 ```{r}
+options(warn=-1)
 library(data.table)
 dt <- fread("activity.csv")
 ```
@@ -15,15 +16,18 @@ calculate the total number of steps taken per day and
 plot this. 
 
 ```{r}
-date.sum <- dt[,.(steps.sum = sum(steps)),by=.(date)]
-hist(date.sum$steps.sum)
-mean.steps.total.per.day <- mean(date.sum$steps.sum,na.rm=T)
-median.steps.total.per.day <- median(date.sum$steps.sum, na.rm=T)
+# Calcuate the total number of steps taken per day
+daily.sum <- dt[,.(steps.sum = sum(steps)),by=.(date)]
+hist(daily.sum$steps.sum,
+     xlab = "Total number taken per day")
+# Calculate mean and median steps per day by ignoring NAs
+mean.steps.total.per.day <- mean(daily.sum$steps.sum,na.rm=T)
+median.steps.total.per.day <- median(daily.sum$steps.sum, na.rm=T)
 ```
 
-Mean of the total number of steps take per day is `r (mean.steps.total.per.day)`.
+Mean of the total number of steps take per day is **`r (mean.steps.total.per.day)`**.
 
-Median of the total number of steps take per day is `r (median.steps.total.per.day)`.
+Median of the total number of steps take per day is **`r (median.steps.total.per.day)`**.
 
 Following plot will show a time series plot of the 5-minute inverval (x-axis) and 
 the average number of steps taken, averaged across all days (y-axis)
@@ -39,12 +43,15 @@ avg.step <- dt[,.(inter.step.avg = mean(steps)),by=.(interval)]
 plot(inter.step.avg ~ interval, avg.step, type="l",
      xlab="5-minute interval",
      ylab="average number of steps taken, average acrooss all days")
-
+# Sort the inter.step.avg by descending order so the 
+# first item has the maximum value steps taken for that interval
 sorted_avg <- avg.step[rev(order(inter.step.avg))]
 ```
 
-5-minute intgerval at **`r sorted_avg$interval[1]`** contains the maximum number of steps. 
+5-minute intgerval at **`r sorted_avg$interval[1]`** contains the maximum number of steps taken. 
+
 ```{r}
+# Re-read in the original value to a new dataset
 orgdt <- fread("activity.csv")
 
 # Imputing missing values
@@ -69,27 +76,46 @@ orgdt$avgsteps <- avg.step$inter.step.avg
 orgdt$steps <- as.numeric(orgdt$steps)
 orgdt$steps[NAs] <- orgdt$avgsteps[NAs]
 
-rm(NAs)
 # Remove the avgsteps column 
 orgdt$avgsteps <- NULL
-# orgdt <- orgdt[,.(steps,date,interval)]
 
 # After removing the avgsteps column, we have a dataset with no NAs
-new.date.sum <- orgdt[,.(steps.sum = sum(steps)),by=.(date)]
+new.daily.sum <- orgdt[,.(steps.sum = sum(steps)),by=.(date)]
 
 # Draw a histogram plot 
-hist(new.date.sum$steps.sum)
+hist(new.daily.sum$steps.sum)
 
-new.mean.steps.total.per.day <- mean(new.date.sum$steps.sum)
-new.median.steps.total.per.day <- median(new.date.sum$steps.sum)
+new.mean.steps.total.per.day <- mean(new.daily.sum$steps.sum)
+new.median.steps.total.per.day <- median(new.daily.sum$steps.sum)
 ```
 Mean of the total number of steps take per day without missing values is **`r (new.mean.steps.total.per.day)`**.
 
 Median of the total number of steps take per day without missing values is **`r (new.median.steps.total.per.day)`**.
 
+The mean and median values from dataset without missing values are different then the mean and median values from dataset with missing values.
+
+If the calculation involves the missing data, the results may not tell the true story of the dataset. 
+
+
 ```{r}
-# Final step 
+# Show the difference in activity patterns between weekday and weekend
+# Convert the date from character to Date format
+orgdt$date <- as.Date(orgdt$date)
+# Use weekdays function to convert date to Monday, Tuesday, ...
+orgdt$wday <- weekdays(orgdt$date)
+
+# If wday in "Monday", "Tuesday", "Wednesday","Thursday", or "Friday"
+#  then assign "weekday" to 
+# Else assign "weekend" 
+orgdt$wday[orgdt$wday %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")] <- "weekday"
+orgdt$wday[orgdt$wday %in% c("Saturday","Sunday")] <- "weekend"
+orgdt$wday <- as.factor(orgdt$wday)
+# Load the lattice package so we can use xyplot
+library(lattice)
+new.avg.step <- orgdt[,.(inter.step.avg = mean(steps)),by=.(interval,wday)]
+xyplot(inter.step.avg ~ interval | wday, new.avg.step,type="l",
+       xlab="5-minute interval",
+       ylab="average number of steps taken, accorss all weekday or weekend")
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
